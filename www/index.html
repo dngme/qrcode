@@ -17,42 +17,42 @@
   <script>
     ons.bootstrap()
       
-      .controller('QRCodeController', function() {
+      .controller('QRCodeController', ['$scope', function($scope) {
           var cntrll = this ; 
           
          cntrll.dataCode='';
          cntrll.errorsTxt='';
          
-         this.readQRCode=function(){
-            
-            cntrll.errorsTxt='';
-            cntrll.dataCode='';
-          
-            window.plugins.barcodeScanner.scan( function(result) {
-                 
-                    if(result.cancelled){
-                         cntrll.errorsTxt = 'сканирование отменено';
-                         return ;
-                    }
-                     
+         cntrll.processResult = function(result){
+            if(result.cancelled){
+                cntrll.errorsTxt = 'сканирование отменено';
+                return ;
+            }
                        
-                     if(result.format!='QR_CODE'){
-                        cntrll.errorsTxt='Изображение не содержит QR код';
-                     }
+             if(result.format!='QR_CODE'){
+                cntrll.errorsTxt='Изображение не содержит QR код';
+                return ;
+             }
                      
-                     cntrll.dataCode=result.text;
-                         
-                              
-                }, function(error) {
-                    cntrll.errorsTxt=error;
+             cntrll.dataCode=result.text;
+                
+         };
+         cntrll.readQRCode=function(){
+            
+            window.plugins.barcodeScanner.scan( 
+                function(result) {
+                    cntrll.processResult(result);
+                    $scope.$apply();
                 }
-             );
+                , function(error) {
+                    cntrll.errorsTxt=error;
+                    $scope.$apply();
+                }           
+            );
          }
-      });
+      }]);
       
-    ons.ready(function() {
-      
-    });
+   
   </script>
 </head>
 <body>
@@ -63,7 +63,7 @@
       
     </ons-toolbar>
    
-    <div class="content" style="margin: 10px;">
+    <div class="content" style="margin: 40px;">
        <p>ФИОФИОФИОФИО <br>
         НКПТ</p>
       <ons-button 

@@ -24,14 +24,24 @@
          cntrll.errorsTxt='';
          
          this.readQRCode=function(){
-             cntrll.errorsTxt='';
-              
-             window.plugins.barcodeScanner.scan( function(result) {
+            
+            cntrll.errorsTxt='';
+            cntrll.dataCode='';
+          
+            window.plugins.barcodeScanner.scan( function(result) {
                  
-                    alert("We got a barcode\n" +
-                              "Result: " + result.text + "\n" +
-                              "Format: " + result.format + "\n" +
-                              "Cancelled: " + result.cancelled);
+                    if(result.cancelled){
+                         cntrll.errorsTxt = 'сканирование отменено';
+                         return ;
+                    }
+                     
+                       
+                     if(result.format!='QR_CODE'){
+                        cntrll.errorsTxt='Изображение не содержит QR код';
+                     }
+                     
+                     cntrll.dataCode=result.text;
+                         
                               
                 }, function(error) {
                     cntrll.errorsTxt=error;
@@ -49,18 +59,21 @@
   <ons-page ng-controller="QRCodeController as qrc">
     
     <ons-toolbar>
-      <div class="center">QRCode Reader</div>
-    </ons-toolbar>
-    
-    
-    <div class="content" style="margin: 10px;">
+     <div class="center">QRCode Reader</div>
       
-      <ons-button ng-click="qrc.readQRCode()">
+    </ons-toolbar>
+   
+    <div class="content" style="margin: 10px;">
+       <p>ФИОФИОФИОФИО <br>
+        НКПТ</p>
+      <ons-button 
+      ng-click="qrc.readQRCode()" 
+      style="width:150px;height:35px; margin-top:50px">
        Прочитать
       </ons-button>
 
       <p>
-        Данные QRCode {{ qrc.dataCode }}
+        Данные QRCode <span ng-bind="qrc.dataCode"></span>
       </p>
       <p ng-show='qrc.errorsTxt.length>0'>
         ошибка: {{ qrc.errorsTxt }}

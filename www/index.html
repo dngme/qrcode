@@ -73,7 +73,7 @@
       </ons-button>
 
       <p>
-        Данные QRCode <span ng-bind="qrc.dataCode"></span>
+        Данные QRCode <span>{{qrc.dataCode}}</span>
       </p>
       <p ng-show='qrc.errorsTxt.length>0'>
         ошибка: {{ qrc.errorsTxt }}

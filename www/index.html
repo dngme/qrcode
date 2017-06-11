@@ -6,6 +6,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src * data:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'">
   <script src="components/loader.js"></script>
   <script src="lib/angular/angular.min.js"></script>
+   <script src="lib/angular/qrcode.js"></script>
   <script src="lib/onsenui/js/onsenui.min.js"></script>
   <script src="lib/onsenui/js/angular-onsenui.min.js"></script>
 
@@ -15,40 +16,84 @@
   <link rel="stylesheet" href="css/style.css">
 
   <script>
+    // запуск onsen фреймворка
     ons.bootstrap()
-      
+      // контроллер angular 
       .controller('QRCodeController', ['$scope', function($scope) {
+          // запоминаем контекст 
           var cntrll = this ; 
-          
+          // переменные 
+          // раскодированные данные прилинкованы к думу 
          cntrll.dataCode='';
+         // ошибка если есть 
          cntrll.errorsTxt='';
+         // сюда прилинкованы данные с инпута 
+         cntrll.inputTxt='';
+         // обьект для кодирования 
+         cntrll.qrcode = null;
          
+         // метод обработки результата декодирования
          cntrll.processResult = function(result){
+             // если сканирование было отменено выводим как ошипк
             if(result.cancelled){
                 cntrll.errorsTxt = 'сканирование отменено';
                 return ;
             }
-                       
+            // если кодированные данные были не в форма те QRCODE выводим ошибку 
+            // библиотека способна распознавать не только QRCODE 
              if(result.format!='QR_CODE'){
                 cntrll.errorsTxt='Изображение не содержит QR код';
                 return ;
              }
-                     
+            //присваиваем результат декодированых данных         
              cntrll.dataCode=result.text;
                 
          };
+         // метод создает обьект для кодировани QR
+         cntrll.createQRCodeObject =function(text){
+            cntrll.qrcode =  new QRCode("qrcode", {
+                text: text, 
+                width: 200,
+                height: 200,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+         }
+         
+         //метод для распознавания(обработка нажатия по клику )
          cntrll.readQRCode=function(){
             
+           
+            //dspsdftv метод библиотеки
             window.plugins.barcodeScanner.scan( 
+                // задаем функцию обработки результата
                 function(result) {
                     cntrll.processResult(result);
+                    // даем понять ангуляру что надо бы обновить view так как изменились переменные
                     $scope.$apply();
                 }
+                // задаем функцию обработки  ошибок
                 , function(error) {
+                    // присваиваем ошипк  и обновляем view
                     cntrll.errorsTxt=error;
                     $scope.$apply();
                 }           
             );
+         }
+         // генерация кода (вызов по клику)
+         cntrll.generateQRCode = function(){
+             // для работы с js либой кодированием первоначально надо создать обьект и дальше его обновлять  
+             if(!!cntrll.qrcode){
+                 // очищаем и генерируем картинк 
+                 cntrll.qrcode.clear(); 
+                 cntrll.qrcode.makeCode(cntrll.inputTxt);
+                 
+             }else{
+                 // создаем
+                 cntrll.createQRCodeObject(cntrll.inputTxt);
+             
+             }
          }
       }]);
       
@@ -63,22 +108,38 @@
       
     </ons-toolbar>
    
-    <div class="content" style="margin: 40px;">
-       <p>ФИОФИОФИОФИО <br>
-        НКПТ</p>
+    <div class="content main-content" >
+       <p>Дипломный проект НКПТ<br>
+        студента группы П13–2Д<br>
+        Сторчеус Константина</p>
       <ons-button 
       ng-click="qrc.readQRCode()" 
-      style="width:150px;height:35px; margin-top:50px">
+      class='button-read'
+       >
        Прочитать
       </ons-button>
 
       <p>
-        Данные QRCode <span>{{qrc.dataCode}}</span>
+        Данные QRCode: <span >{{qrc.dataCode}}</span>
       </p>
       <p ng-show='qrc.errorsTxt.length>0'>
         ошибка: {{ qrc.errorsTxt }}
       </p>
-   
+      <br>
+      <br>
+      <p> 
+        <ons-input placeholder="Введите текст" ng-model='qrc.inputTxt'  modifier="underbar"  float></ons-input>
+     </p>
+      <p> 
+      <ons-button 
+        ng-click="qrc.generateQRCode()"
+        class = 'buttton-generate'
+       >
+        Создать
+      </ons-button>
+      </p>
+     <div id="qrcode" ></div>
+        
     </div>
   </ons-page>
 </body>
